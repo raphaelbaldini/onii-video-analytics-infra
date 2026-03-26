@@ -1,0 +1,4 @@
+name: onii-video-analytics
+runtime:
+  name: python
+description: AWS video analytics infrastructure with staged processing.

@@ -1,0 +1,9 @@
+config:
+  aws:region: us-east-1
+  onii-video-analytics:projectPrefix: onii-video
+  onii-video-analytics:customerNotificationEmail: replace-me@example.com
+  onii-video-analytics:asgMinSize: 0
+  onii-video-analytics:asgMaxSize: 3
+  onii-video-analytics:instanceTypes:
+    - g4dn.xlarge
+  onii-video-analytics:workerAmiSsmParameter: /onii-video/dev/worker/ami-id
