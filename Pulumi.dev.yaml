@@ -1,9 +1,49 @@
 config:
   aws:region: us-east-1
   onii-video-analytics:projectPrefix: onii-video
+  onii-video-analytics:buckets:
+    - raw-videos
+    - evidence
+    - reports
+  onii-video-analytics:bucketsConfig:
+    raw-videos:
+      enableVersioning: false
+      lifecycle:
+        expireDays: 1
+        abortMultipartDays: 1
+    evidence:
+      enableVersioning: false
+      lifecycle:
+        expireDays: 7
+        abortMultipartDays: 1
+    reports:
+      enableVersioning: false
+      lifecycle:
+        expireDays: 45
+        abortMultipartDays: 1
+  onii-video-analytics:queues:
+    ingest:
+      visibilityTimeoutSeconds: 300
+      maxReceiveCount: 5
+    stage2:
+      visibilityTimeoutSeconds: 600
+      maxReceiveCount: 5
   onii-video-analytics:customerNotificationEmail: replace-me@example.com
   onii-video-analytics:asgMinSize: 0
   onii-video-analytics:asgMaxSize: 3
   onii-video-analytics:instanceTypes:
     - g4dn.xlarge
   onii-video-analytics:workerAmiSsmParameter: /onii-video/dev/worker/ami-id
+  onii-video-analytics:projectTags:
+    Project: onii-video-analytics
+    Environment: dev
+    Owner: video-platform
+    ManagedBy: pulumi
+  onii-video-analytics:budgetTags:
+    CostCenter: baldini
+    BudgetOwner: rbaldini
+    BudgetScope: video-analytics
+  onii-video-analytics:securityTags:
+    DataClassification: confidential
+    ComplianceRetention: short-lived
+    SecurityTier: standard

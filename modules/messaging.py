@@ -12,44 +12,34 @@ class MessagingResources:
     stage2_dlq: aws.sqs.Queue
 
 
-def create_messaging(prefix: str) -> MessagingResources:
-    ingest_dlq = aws.sqs.Queue(
-        "ingest-dlq",
-        name=f"{prefix}-ingest-dlq",
-        message_retention_seconds=1209600,
+def create_queue_with_dlq(
+    resource_name: str,
+    queue_name: str,
+    visibility_timeout_seconds: int,
+    max_receive_count: int = 5,
+    message_retention_seconds: int = 1209600,
+    tags: dict[str, str] | None = None,
+) -> tuple[aws.sqs.Queue, aws.sqs.Queue]:
+    resolved_tags = dict(tags or {})
+
+    dlq = aws.sqs.Queue(
+        f"{resource_name}-dlq",
+        name=f"{queue_name}-dlq",
+        message_retention_seconds=message_retention_seconds,
+        tags={**resolved_tags, "Name": f"{queue_name}-dlq"},
     )
 
-    ingest_queue = aws.sqs.Queue(
-        "ingest-queue",
-        name=f"{prefix}-ingest-queue",
-        visibility_timeout_seconds=300,
-        redrive_policy=ingest_dlq.arn.apply(
+    queue = aws.sqs.Queue(
+        resource_name,
+        name=queue_name,
+        visibility_timeout_seconds=visibility_timeout_seconds,
+        tags={**resolved_tags, "Name": queue_name},
+        redrive_policy=dlq.arn.apply(
             lambda arn: pulumi.Output.json_dumps(
-                {"deadLetterTargetArn": arn, "maxReceiveCount": 5}
+                {"deadLetterTargetArn": arn, "maxReceiveCount": max_receive_count}
             )
         ),
     )
 
-    stage2_dlq = aws.sqs.Queue(
-        "stage2-dlq",
-        name=f"{prefix}-stage2-dlq",
-        message_retention_seconds=1209600,
-    )
+    return queue, dlq
 
-    stage2_queue = aws.sqs.Queue(
-        "stage2-queue",
-        name=f"{prefix}-stage2-queue",
-        visibility_timeout_seconds=600,
-        redrive_policy=stage2_dlq.arn.apply(
-            lambda arn: pulumi.Output.json_dumps(
-                {"deadLetterTargetArn": arn, "maxReceiveCount": 5}
-            )
-        ),
-    )
-
-    return MessagingResources(
-        ingest_queue=ingest_queue,
-        ingest_dlq=ingest_dlq,
-        stage2_queue=stage2_queue,
-        stage2_dlq=stage2_dlq,
-    )

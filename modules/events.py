@@ -120,7 +120,7 @@ def create_events(
         principal="s3.amazonaws.com",
         source_arn=storage.raw_video_bucket.arn,
     )
-
+    
     aws.s3.BucketNotification(
         "raw-bucket-events",
         bucket=storage.raw_video_bucket.id,
@@ -130,7 +130,7 @@ def create_events(
                 events=["s3:ObjectCreated:*"],
             )
         ],
-        lambdas=[
+        lambda_functions=[  # <- correct
             aws.s3.BucketNotificationLambdaFunctionArgs(
                 lambda_function_arn=metadata_lambda.arn,
                 events=["s3:ObjectCreated:*"],

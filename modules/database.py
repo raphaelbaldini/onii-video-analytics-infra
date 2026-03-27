@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import pulumi_aws as aws
 
@@ -9,33 +10,28 @@ class DatabaseResources:
     detection_results_table: aws.dynamodb.Table
 
 
-def create_database(prefix: str) -> DatabaseResources:
-    ingest_metadata_table = aws.dynamodb.Table(
-        "ingest-metadata-table",
-        name=f"{prefix}-ingest-metadata",
+def create_on_demand_table(
+    resource_name: str,
+    table_name: str,
+    hash_key: str,
+    range_key: Optional[str],
+    attributes: list[aws.dynamodb.TableAttributeArgs],
+    ttl_attribute_name: Optional[str] = None,
+    tags: dict[str, str] | None = None,
+) -> aws.dynamodb.Table:
+    resolved_tags = dict(tags or {})
+    resolved_tags.setdefault("Name", table_name)
+
+    return aws.dynamodb.Table(
+        resource_name,
+        name=table_name,
         billing_mode="PAY_PER_REQUEST",
-        hash_key="videoId",
-        range_key="uploadedAt",
-        attributes=[
-            aws.dynamodb.TableAttributeArgs(name="videoId", type="S"),
-            aws.dynamodb.TableAttributeArgs(name="uploadedAt", type="S"),
-        ],
-        ttl=aws.dynamodb.TableTtlArgs(attribute_name="ttl", enabled=True),
+        hash_key=hash_key,
+        range_key=range_key,
+        attributes=attributes,
+        ttl=aws.dynamodb.TableTtlArgs(attribute_name=ttl_attribute_name, enabled=True)
+        if ttl_attribute_name
+        else None,
+        tags=resolved_tags,
     )
 
-    detection_results_table = aws.dynamodb.Table(
-        "detection-results-table",
-        name=f"{prefix}-detection-results",
-        billing_mode="PAY_PER_REQUEST",
-        hash_key="videoId",
-        range_key="analysisStage",
-        attributes=[
-            aws.dynamodb.TableAttributeArgs(name="videoId", type="S"),
-            aws.dynamodb.TableAttributeArgs(name="analysisStage", type="S"),
-        ],
-    )
-
-    return DatabaseResources(
-        ingest_metadata_table=ingest_metadata_table,
-        detection_results_table=detection_results_table,
-    )

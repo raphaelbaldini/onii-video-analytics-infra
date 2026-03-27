@@ -11,15 +11,23 @@ class NetworkResources:
     worker_security_group_id: pulumi.Output[str]
 
 
-def create_network(prefix: str) -> NetworkResources:
+def get_default_network() -> tuple[str, list[str]]:
     default_vpc = aws.ec2.get_vpc(default=True)
     default_subnets = aws.ec2.get_subnets(filters=[{"name": "vpc-id", "values": [default_vpc.id]}])
+    return default_vpc.id, default_subnets.ids
+
+
+def create_worker_security_group(
+    prefix: str, vpc_id: str, tags: dict[str, str] | None = None
+) -> aws.ec2.SecurityGroup:
+    resolved_tags = dict(tags or {})
+    resolved_tags.setdefault("Name", f"{prefix}-workers-sg")
 
     worker_security_group = aws.ec2.SecurityGroup(
         "worker-security-group",
         name=f"{prefix}-workers-sg",
         description="Security group for video processing workers",
-        vpc_id=default_vpc.id,
+        vpc_id=vpc_id,
         egress=[
             aws.ec2.SecurityGroupEgressArgs(
                 protocol="-1",
@@ -29,11 +37,7 @@ def create_network(prefix: str) -> NetworkResources:
                 ipv6_cidr_blocks=["::/0"],
             )
         ],
-        tags={"Name": f"{prefix}-workers-sg"},
+        tags=resolved_tags,
     )
+    return worker_security_group
 
-    return NetworkResources(
-        vpc_id=pulumi.Output.from_input(default_vpc.id),
-        subnet_ids=pulumi.Output.from_input(default_subnets.ids),
-        worker_security_group_id=worker_security_group.id,
-    )
