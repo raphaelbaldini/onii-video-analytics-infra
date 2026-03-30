@@ -33,6 +33,7 @@ def create_queue_with_dlq(
         resource_name,
         name=queue_name,
         visibility_timeout_seconds=visibility_timeout_seconds,
+        message_retention_seconds=message_retention_seconds,
         tags={**resolved_tags, "Name": queue_name},
         redrive_policy=dlq.arn.apply(
             lambda arn: pulumi.Output.json_dumps(
