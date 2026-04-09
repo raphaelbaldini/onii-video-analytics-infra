@@ -26,6 +26,7 @@ export_database_outputs(database)
 worker_ssm_path = create_worker_environment_ssm_parameters(
     prefix=prefix,
     messaging=messaging,
+    database=database,
     worker_env_environment=pulumi.get_stack(),
     tags=cfg.resource_tags,
     aws_region=cfg.aws_region,

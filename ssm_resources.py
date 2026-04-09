@@ -24,6 +24,7 @@ from messaging_resources import MessagingResourceMap
 def create_worker_environment_ssm_parameters(
     prefix: str,
     messaging: MessagingResourceMap,
+    database: DatabaseResources,
     *,
     worker_env_environment: str = "dev",
     tags: dict[str, str] | None = None,
