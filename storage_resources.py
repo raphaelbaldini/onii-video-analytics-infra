@@ -1,6 +1,5 @@
 import pulumi
 import pulumi_aws as aws
-
 from pulumi_aws_modules.storage import create_secure_bucket
 
 

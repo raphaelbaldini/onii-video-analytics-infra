@@ -28,10 +28,36 @@ network = create_network(prefix, tags=cfg.resource_tags)
 export_network_outputs(network)
 
 identity = create_identity_resources(
+storage = create_storage(prefix, tags=cfg.resource_tags)
+export_storage_outputs(storage)
+
+messaging = create_messaging(prefix, tags=cfg.resource_tags)
+export_messaging_outputs(messaging)
+
+database = create_database(prefix, tags=cfg.resource_tags)
+export_database_outputs(database)
+
+network = create_network(prefix, tags=cfg.resource_tags)
+export_network_outputs(network)
+
+identity = create_identity_resources(
     prefix=prefix,
     storage=storage,
     messaging=messaging,
     database=database,
+    tags=cfg.resource_tags,
+)
+export_identity_outputs(identity)
+
+# events = create_events(prefix, storage, messaging, database)
+# notifications = create_notifications(prefix, cfg.customer_notification_email)
+
+
+compute = create_compute_resources(
+    prefix=prefix,
+    network=network,
+    messaging=messaging,
+    identity=identity,
     tags=cfg.resource_tags,
 )
 export_identity_outputs(identity)
