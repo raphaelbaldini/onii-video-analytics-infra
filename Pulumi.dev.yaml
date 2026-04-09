@@ -1,9 +1,56 @@
 config:
   aws:region: us-east-1
   onii-video-analytics:projectPrefix: onii-video
+  onii-video-analytics:buckets:
+    - raw-videos
+    - evidence
+    - reports
+  onii-video-analytics:bucketsConfig:
+    raw-videos:
+      enableVersioning: false
+      lifecycle:
+        expireDays: 1
+        abortMultipartDays: 1
+    evidence:
+      enableVersioning: false
+      lifecycle:
+        expireDays: 7
+        abortMultipartDays: 1
+    reports:
+      enableVersioning: false
+      lifecycle:
+        expireDays: 45
+        abortMultipartDays: 1
+  onii-video-analytics:queues:
+    ingest:
+      visibilityTimeoutSeconds: 300
+      maxReceiveCount: 5
+      messageRetentionSeconds: 172800   # 2 days
+    stage2:
+      visibilityTimeoutSeconds: 600
+      maxReceiveCount: 5
+      messageRetentionSeconds: 432000  # 5 days
   onii-video-analytics:customerNotificationEmail: replace-me@example.com
   onii-video-analytics:asgMinSize: 0
   onii-video-analytics:asgMaxSize: 3
+  onii-video-analytics:scaleOutStartQueueDepth: 10
+  onii-video-analytics:queueDepthStep: 10
   onii-video-analytics:instanceTypes:
     - g4dn.xlarge
+  # g4dn.xlarge on-demand is roughly $0.526/h in us-east-1.
+  # 60% cheaper target => pay up to ~40% => about $0.21/h.
+  onii-video-analytics:spotMaxPrice: "0.23"
   onii-video-analytics:workerAmiSsmParameter: /onii-video/dev/worker/ami-id
+  onii-video-analytics:projectTags:
+    Project: onii-video-analytics
+    Environment: dev
+    Owner: video-platform
+    ManagedBy: pulumi
+  onii-video-analytics:budgetTags:
+    CostCenter: baldini
+    BudgetOwner: rbaldini
+    BudgetScope: video-analytics
+  onii-video-analytics:securityTags:
+    DataClassification: confidential
+    ComplianceRetention: short-lived
+    SecurityTier: standard

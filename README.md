@@ -142,6 +142,65 @@ pulumi config set onii-video-analytics:workerAmiSsmParameter /onii-video/dev/wor
 pulumi config set onii-video-analytics:workerAmiId ami-0123456789abcdef0
 ```
 
+Per-bucket S3 versioning can be controlled in stack YAML with `bucketsConfig`:
+
+```yaml
+config:
+  onii-video-analytics:buckets:
+    - raw-videos
+    - evidence
+    - reports
+  onii-video-analytics:bucketsConfig:
+    raw-videos:
+      enableVersioning: true
+    evidence:
+      enableVersioning: false
+    reports:
+      enableVersioning: true
+```
+
+Per-bucket lifecycle rules (expiration and storage class transitions) are also supported:
+
+```yaml
+config:
+  onii-video-analytics:bucketsConfig:
+    raw-videos:
+      enableVersioning: true
+      lifecycle:
+        expireDays: 30
+        abortMultipartDays: 3
+        transitions:
+          - days: 7
+            storageClass: STANDARD_IA
+          - days: 15
+            storageClass: GLACIER
+        noncurrentExpireDays: 14
+        noncurrentTransitions:
+          - days: 7
+            storageClass: STANDARD_IA
+        cleanDeleteMarkers: true
+```
+
+Standard governance tags can be supplied in stack config and are applied to taggable resources
+(for example S3 buckets and SQS queues):
+
+```yaml
+config:
+  onii-video-analytics:projectTags:
+    Project: onii-video-analytics
+    Environment: dev
+    Owner: video-platform
+    ManagedBy: pulumi
+  onii-video-analytics:budgetTags:
+    CostCenter: retail-ai
+    BudgetOwner: finance
+    BudgetScope: video-analytics
+  onii-video-analytics:securityTags:
+    DataClassification: confidential
+    ComplianceRetention: short-lived
+    SecurityTier: standard
+```
+
 ## Deploy
 
 ```bash
