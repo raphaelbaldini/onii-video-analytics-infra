@@ -45,6 +45,12 @@ config:
   onii-video-analytics:workDir: "/tmp/onii-worker"
   # Worker env SSM path uses stack name: /{projectPrefix}/{stack}/worker/env/* (see ssm_resources.py).
   onii-video-analytics:workerAmiSsmParameter: /onii-video/dev/worker/ami-id
+  # CodeBuild + GitHub Actions OIDC for AMI builds (see ci_resources.py).
+  # Requires AWS CodeConnections: arn:aws:codeconnections:...
+  onii-video-analytics:enableAmiCiResources: true
+  onii-video-analytics:githubOrg: raphaelbaldini
+  onii-video-analytics:codeConnectionsArn: arn:aws:codeconnections:us-east-1:302933091663:connection/7fb09b81-1046-484d-863d-62ce71813568
+  onii-video-analytics:createGithubOidcProvider: true
   onii-video-analytics:projectTags:
     Project: onii-video-analytics
     Environment: dev

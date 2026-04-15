@@ -2,7 +2,7 @@ import pulumi
 import pulumi_aws as aws
 
 from pulumi_aws_modules.database import DatabaseResources
-from pulumi_aws_modules.iam import IdentityResources, create_worker_identity
+from pulumi_aws_modules.security.iam import IdentityResources, create_worker_identity
 from pulumi_aws_modules.messaging import MessagingResources
 from pulumi_aws_modules.storage import StorageResources
 
@@ -34,10 +34,12 @@ def create_identity_resources(
     tags: dict[str, str] | None = None,
 ) -> IdentityResources:
     return create_worker_identity(
-        prefix=prefix,
         storage=_as_storage_resources(storage),
         messaging=_as_messaging_resources(messaging),
         database=database,
+        role_name=f"{prefix}-video-worker-role",
+        instance_profile_name=f"{prefix}-video-worker-profile",
+        pulumi_resource_prefix=f"{prefix}-video-worker-identity",
         tags=tags,
     )
 

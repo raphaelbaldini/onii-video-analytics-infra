@@ -16,7 +16,7 @@ IAM or to match the current AMI factory docs unchanged.
 import pulumi
 
 from pulumi_aws_modules.database import DatabaseResources
-from pulumi_aws_modules.ssm import create_string_parameter
+from pulumi_aws_modules.security.ssm import create_string_parameter
 
 from messaging_resources import MessagingResourceMap
 

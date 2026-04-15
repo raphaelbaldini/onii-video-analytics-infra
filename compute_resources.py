@@ -3,9 +3,11 @@ from dataclasses import dataclass
 import pulumi
 import pulumi_aws as aws
 from pulumi_aws_modules.compute import ComputeResources, create_compute
-from pulumi_aws_modules.iam import IdentityResources
+from pulumi_aws_modules.compute.scaling import create_queue_depth_scaling
 from pulumi_aws_modules.network import NetworkResources
-from pulumi_aws_modules.scaling import create_queue_depth_scaling
+from pulumi_aws_modules.security.iam import IdentityResources
+
+from worker_bootstrap import DEFAULT_WORKER_AMI_NAME_PATTERN, DEFAULT_WORKER_AMI_OWNERS, worker_user_data
 
 
 @dataclass(frozen=True)
@@ -37,8 +39,11 @@ def create_compute_resources(
         min_size=min_size,
         max_size=max_size,
         instance_types=instance_types,
+        user_data=worker_user_data(prefix),
         worker_ami_id=worker_ami_id,
         worker_ami_ssm_parameter=worker_ami_ssm_parameter,
+        default_ami_name_pattern=DEFAULT_WORKER_AMI_NAME_PATTERN,
+        default_ami_owners=DEFAULT_WORKER_AMI_OWNERS,
         spot_max_price=spot_max_price,
         tags=tags,
     )
@@ -61,8 +66,11 @@ def create_compute_resources(
         min_size=min_size,
         max_size=max_size,
         instance_types=instance_types,
+        user_data=worker_user_data(prefix),
         worker_ami_id=worker_ami_id,
         worker_ami_ssm_parameter=worker_ami_ssm_parameter,
+        default_ami_name_pattern=DEFAULT_WORKER_AMI_NAME_PATTERN,
+        default_ami_owners=DEFAULT_WORKER_AMI_OWNERS,
         spot_max_price=spot_max_price,
         tags=tags,
     )

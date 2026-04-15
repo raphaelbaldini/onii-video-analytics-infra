@@ -10,8 +10,10 @@ from pulumi_aws_modules.network import (
 def create_network(prefix: str, tags: dict[str, str] | None = None) -> NetworkResources:
     vpc_id, subnet_ids = get_default_network()
     worker_security_group = create_worker_security_group(
-        prefix=prefix,
         vpc_id=vpc_id,
+        security_group_name=f"{prefix}-workers-sg",
+        security_group_description="Security group for video processing workers",
+        security_group_resource_name=f"{prefix}-worker-security-group",
         tags=tags,
     )
 

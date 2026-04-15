@@ -8,7 +8,7 @@ from network_resources import create_network, export_network_outputs
 from storage_resources import create_storage, export_storage_outputs
 from messaging_resources import create_messaging, export_messaging_outputs
 from ssm_resources import create_worker_environment_ssm_parameters, export_worker_ssm_outputs
-from pulumi_aws_modules.events import create_events
+from ci_resources import create_ami_ci_resources, export_ami_ci_outputs
 
 
 cfg = load_config()
@@ -33,9 +33,35 @@ worker_ssm_path = create_worker_environment_ssm_parameters(
     confidence_threshold=cfg.confidence_threshold,
     model_stage1=cfg.model_stage1,
     model_stage2=cfg.model_stage2,
-    work_dir=cfg.work_dir
+    work_dir=cfg.work_dir,
 )
 export_worker_ssm_outputs(worker_ssm_path)
+
+if cfg.enable_ami_ci_resources:
+    if not cfg.github_org:
+        raise ValueError("enableAmiCiResources is true but githubOrg is missing in stack config")
+    if not cfg.code_connection_arn:
+        raise ValueError(
+            "enableAmiCiResources is true but codeConnectionsArn (or legacy codestarConnectionArn) is missing"
+        )
+    if not cfg.worker_ami_ssm_parameter:
+        raise ValueError("enableAmiCiResources requires workerAmiSsmParameter to be set")
+    default_worker_repo_url = f"https://github.com/{cfg.github_org}/{cfg.github_worker_repo}.git"
+    ami_ci = create_ami_ci_resources(
+        prefix=prefix,
+        stack_name=pulumi.get_stack(),
+        aws_region=cfg.aws_region,
+        resource_tags=cfg.resource_tags,
+        github_org=cfg.github_org,
+        github_ami_factory_repo=cfg.github_ami_factory_repo,
+        github_worker_repo=cfg.github_worker_repo,
+        code_connection_arn=cfg.code_connection_arn,
+        worker_ami_ssm_parameter=cfg.worker_ami_ssm_parameter,
+        default_worker_repo_url=default_worker_repo_url,
+        create_github_oidc_provider=cfg.create_github_oidc_provider,
+        ami_factory_branch=cfg.ami_factory_branch,
+    )
+    export_ami_ci_outputs(ami_ci)
 
 network = create_network(prefix, tags=cfg.resource_tags)
 export_network_outputs(network)
@@ -49,7 +75,9 @@ identity = create_identity_resources(
 )
 export_identity_outputs(identity)
 
-# events = create_events(prefix, storage, messaging, database)
+# from events_resources import create_metadata_events, export_events_outputs
+# events = create_metadata_events(prefix, storage, messaging, database)
+# export_events_outputs(events)
 
 compute = create_compute_resources(
     prefix=prefix,
